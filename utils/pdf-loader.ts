@@ -32,7 +32,7 @@ export async function getChunkedDocsFromPDF(pdfSource: PDFSource) {
       }
       case "buffer": {
         // Handle Buffer (e.g., from fs.readFile)
-        const pdfBlob = new Blob([pdfSource.source as Buffer], {
+        const pdfBlob = new Blob([pdfSource.source as any], {
           type: "application/pdf",
         });
         const loader = new WebPDFLoader(pdfBlob);

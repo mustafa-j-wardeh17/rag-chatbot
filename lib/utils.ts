@@ -1,6 +1,5 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Message } from "ai";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -36,7 +35,7 @@ export function formattedText(inputText: string) {
 }
 
 // Default UI Message
-export const initialMessages: Message[] = [
+export const initialMessages: any[] = [
   {
     role: "assistant",
     id: "0",
