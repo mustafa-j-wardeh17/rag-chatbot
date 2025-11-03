@@ -1,7 +1,8 @@
 import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { Document } from "@langchain/core/documents";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+
 import axios from "axios";
 
 export type PDFSource = {
@@ -30,15 +31,15 @@ export async function getChunkedDocsFromPDF(pdfSource: PDFSource) {
         docs = await loader.load();
         break;
       }
-      case "buffer": {
-        // Handle Buffer (e.g., from fs.readFile)
-        const pdfBlob = new Blob([pdfSource.source as any], {
-          type: "application/pdf",
-        });
-        const loader = new WebPDFLoader(pdfBlob);
-        docs = await loader.load();
-        break;
-      }
+    //   case "buffer": {
+    //     // Handle Buffer (e.g., from fs.readFile)
+    //     const pdfBlob = new Blob([pdfSource.source as Buffer], {
+    //       type: "application/pdf",
+    //     });
+    //     const loader = new WebPDFLoader(pdfBlob);
+    //     docs = await loader.load();
+    //     break;
+    //   }
       default:
         throw new Error("Unsupported PDF source type");
     }

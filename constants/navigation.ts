@@ -1,4 +1,4 @@
-import { MessageSquare, BookOpen, Settings, Sparkles, LucideIcon, DollarSign, Mail } from 'lucide-react'
+import { MessageSquare, BookOpen, Settings, Sparkles, LucideIcon, DollarSign, Mail, Upload } from 'lucide-react'
 
 export interface NavigationItem {
   id: string
@@ -14,18 +14,24 @@ export const navigationItems: NavigationItem[] = [
     icon: Sparkles, 
     href: '/' 
   },
+  {
+    id:'upload',
+    label:'Upload',
+    icon:Upload,
+    href:'/upload'
+  },
   // { 
   //   id: 'chat', 
   //   label: 'Chat', 
   //   icon: MessageSquare, 
   //   href: '/chat' 
   // },
-  { 
-    id: 'pricing', 
-    label: 'Pricing', 
-    icon: DollarSign, 
-    href: '/pricing' 
-  },
+  // { 
+  //   id: 'pricing', 
+  //   label: 'Pricing', 
+  //   icon: DollarSign, 
+  //   href: '/pricing' 
+  // },
   { 
     id: 'contact', 
     label: 'Contact', 

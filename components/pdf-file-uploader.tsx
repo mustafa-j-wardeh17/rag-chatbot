@@ -119,12 +119,12 @@ export default function PDFFileUpload({
         </div>
       ) : (
         <UploadDropzone
-          className="ut-allowed-content:hidden"
+          className="ut-allowed-content:hidden cursor-pointer"
           endpoint={endpoint}
           onClientUploadComplete={(res: any) => {
             const item = res[0];
             const url = {
-              url: item.url,
+              url: item.ufsUrl||item.url,
               title: item.name,
               size: item.size,
               type: item.type,

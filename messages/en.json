@@ -7,7 +7,8 @@
     "docs": "Docs",
     "settings": "Settings",
     "contact": "Contact",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "upload": "Upload"
   },
   "home": {
     "title": "Welcome to",
@@ -25,6 +26,14 @@
     "loading": "Loading...",
     "error": "An error occurred",
     "tryAgain": "Try again"
+  },
+  "upload": {
+    "title": "Upload PDF",
+    "description": "Upload a PDF file to help the AI assistant",
+    "upload": "Upload PDF",
+    "uploading": "Uploading...",
+    "uploaded": "Uploaded successfully",
+    "error": "An error occurred"
   }
 }
 
