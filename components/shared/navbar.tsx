@@ -136,7 +136,7 @@ const Navbar = () => {
         {/* Logo Section */}
         <Link 
           href="/" 
-          className="flex items-center gap-3 group cursor-pointer"
+          className="sm:flex hidden items-center gap-3 group cursor-pointer"
         >
           <div className="relative">
             {/* Animated glow effect */}
@@ -147,7 +147,7 @@ const Navbar = () => {
               <Sparkles className="h-5 w-5 text-primary-foreground animate-pulse" />
             </div>
           </div>
-          <div className="flex flex-col">
+          <div className="sm:flex flex-col  hidden">
             <span className="text-lg font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
               {t('title')}
             </span>
@@ -237,7 +237,7 @@ const Navbar = () => {
         {/* Mobile Navigation - Simplified */}
         <div className="flex md:hidden items-center gap-2">
           <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-gradient-to-br from-muted/40 to-muted/30 backdrop-blur-md border border-primary/10">
-            {navigationItems.slice(0, 2).map((item, index) => {
+            {navigationItems.map((item, index) => {
               const Icon = item.icon
               const isActive = activeNav === item.id
               return (
@@ -272,7 +272,7 @@ const Navbar = () => {
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="h-9 w-9 rounded-lg border-primary/20 bg-gradient-to-br from-background to-muted/30 hover:border-primary/40 hover:from-primary/5 hover:to-primary/10 transition-all duration-300 group relative overflow-hidden"
+                className="h-9 w-9 cursor-pointer rounded-lg border-primary/20 bg-gradient-to-br from-background to-muted/30 hover:border-primary/40 hover:from-primary/5 hover:to-primary/10 transition-all duration-300 group relative overflow-hidden"
               >
                 <Languages className="h-4 w-4" />
                 <span className="sr-only">Change language</span>
@@ -280,7 +280,7 @@ const Navbar = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align={locale === 'ar' ? 'start' : 'end'}
-              className="w-32 bg-background/95 backdrop-blur-xl border-primary/20 shadow-lg shadow-primary/5"
+              className="w-32 bg-background/95 backdrop-blur-xl border-primary/20 shadow-lg shadow-primary/5 flex flex-col gap-1"
             >
               <DropdownMenuItem 
                 onClick={() => router.replace(pathname, { locale: 'en' })}

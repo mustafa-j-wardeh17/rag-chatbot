@@ -35,7 +35,7 @@ export function ModeToggle() {
         <Button 
           variant="outline" 
           size="icon" 
-          className="h-9 w-9 rounded-lg border-primary/20 bg-gradient-to-br from-background to-muted/30 hover:border-primary/40 hover:from-primary/5 hover:to-primary/10 transition-all duration-300 group relative overflow-hidden"
+          className="h-9 w-9 cursor-pointer rounded-lg border-primary/20 bg-gradient-to-br from-background to-muted/30 hover:border-primary/40 hover:from-primary/5 hover:to-primary/10 transition-all duration-300 group relative overflow-hidden"
         >
           {/* Animated background glow */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
