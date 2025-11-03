@@ -3,13 +3,23 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { ModeToggle } from '../theme-toggle'
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
+import { useTranslations, useLocale } from 'next-intl'
 import { navigationItems } from '@/constants/navigation'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Languages } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 
 const Navbar = () => {
   const pathname = usePathname()
+  const router = useRouter()
+  const locale = useLocale()
+  const t = useTranslations('navbar')
   const [scrolled, setScrolled] = useState(false)
   const [activeNav, setActiveNav] = useState('home')
   const [sliderStyle, setSliderStyle] = useState({ width: 0, left: 0, isAnimating: false })
@@ -17,18 +27,26 @@ const Navbar = () => {
 
   // Sync active nav with current pathname - this is the source of truth
   useEffect(() => {
+    // usePathname from next-intl already returns pathname without locale
+    const currentPath = pathname || '/'
+    
     // Match exact pathname or handle root path
     const currentItem = navigationItems.find(item => {
       if (item.href === '/') {
-        return pathname === '/'
+        // Only match root if pathname is exactly '/'
+        return currentPath === '/'
       }
-      return pathname === item.href || pathname.startsWith(item.href + '/')
+      // Match exact path or sub-paths
+      return currentPath === item.href || currentPath.startsWith(item.href + '/')
     })
     
     if (currentItem) {
       setActiveNav(currentItem.id)
+    } else {
+      // Fallback to home if no match found
+      setActiveNav('home')
     }
-  }, [pathname])
+  }, [pathname, locale])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,10 +66,14 @@ const Navbar = () => {
         const containerRect = container.getBoundingClientRect()
         const activeRect = activeElement.getBoundingClientRect()
         
+        // Calculate position - works correctly in both LTR and RTL
+        // getBoundingClientRect returns absolute positions, so we calculate relative to container
+        const leftPosition = activeRect.left - containerRect.left
+        
         setSliderStyle(prev => ({
           ...prev,
           width: activeRect.width,
-          left: activeRect.left - containerRect.left,
+          left: leftPosition,
           isAnimating: true,
         }))
 
@@ -61,14 +83,16 @@ const Navbar = () => {
         }, 700)
       }
     }
-  }, [activeNav])
+  }, [activeNav, locale])
 
-  // Update slider position when active nav changes
+  // Update slider position when active nav or locale changes
   useEffect(() => {
-    // Small delay to ensure DOM is updated
-    const timer = setTimeout(updateSliderPosition, 10)
+    // Delay to ensure DOM is updated after navigation/layout changes
+    const timer = setTimeout(() => {
+      updateSliderPosition()
+    }, 150)
     return () => clearTimeout(timer)
-  }, [activeNav, updateSliderPosition])
+  }, [activeNav, locale, updateSliderPosition])
 
   // Initial position calculation and resize handler
   useEffect(() => {
@@ -79,13 +103,14 @@ const Navbar = () => {
       clearTimeout(timer)
       window.removeEventListener('resize', updateSliderPosition)
     }
-  }, [updateSliderPosition])
+  }, [updateSliderPosition, locale])
 
   return (
-    <nav
-      className={cn(
-        "fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl transition-all duration-500",
-        "backdrop-blur-xl border rounded-3xl ring-1 ring-primary/5 relative",
+    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+      <nav
+        className={cn(
+          "w-full max-w-5xl transition-all duration-500",
+          "backdrop-blur-xl border rounded-3xl ring-1 ring-primary/5 relative",
         // Base shadows for light mode - subtle and professional
         "shadow-[0_8px_16px_-4px_rgba(0,0,0,0.08),0_4px_8px_-2px_rgba(0,0,0,0.04)]",
         "shadow-primary/5",
@@ -99,11 +124,15 @@ const Navbar = () => {
         // Inner highlight for glassmorphism
         "before:absolute before:inset-0 before:rounded-inherit before:pointer-events-none before:z-0"
       )}
+      dir={locale === 'ar' ? 'rtl' : 'ltr'}
     >
       {/* Animated gradient border effect */}
       <div className="absolute inset-0 rounded-inherit bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 opacity-50 -z-10 blur-xl" />
       
-      <div className="flex items-center justify-between px-6 py-4 relative">
+      <div className={cn(
+        "flex items-center justify-between px-6 py-4 relative",
+        locale === 'ar' && "flex-row-reverse"
+      )}>
         {/* Logo Section */}
         <Link 
           href="/" 
@@ -120,10 +149,10 @@ const Navbar = () => {
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
-              RAG Chatbot
+              {t('title')}
             </span>
             <span className="text-[10px] text-muted-foreground leading-none -mt-0.5 font-medium opacity-80">
-              AI-Powered Assistant
+              {t('subtitle')}
             </span>
           </div>
         </Link>
@@ -157,10 +186,19 @@ const Navbar = () => {
                 ref={(el) => {
                   navItemsRef.current[item.id] = el
                 }}
-                href={item.href}
+                href={item.href as any}
+                onClick={(e) => {
+                  // Update active nav immediately for better UX
+                  setActiveNav(item.id)
+                  // Let Next.js handle navigation, then update slider after navigation
+                  setTimeout(() => {
+                    updateSliderPosition()
+                  }, 100)
+                }}
                 className={cn(
                   "relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl transition-colors duration-300 z-20 isolate group",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
+                  locale === 'ar' && "flex-row-reverse",
                   isActive 
                     ? "text-primary-foreground" 
                     : "text-muted-foreground hover:text-foreground"
@@ -189,7 +227,7 @@ const Navbar = () => {
                   "text-sm font-semibold relative z-10 transition-all",
                   isActive && "drop-shadow-sm"
                 )}>
-                  {item.label}
+                  {t(item.id.toLowerCase() as any)}
                 </span>
               </Link>
             )
@@ -205,7 +243,7 @@ const Navbar = () => {
               return (
                 <Link
                   key={item.id}
-                  href={item.href}
+                  href={item.href as any}
                   className={cn(
                     "p-2.5 rounded-lg transition-all duration-300 relative isolate",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
@@ -224,17 +262,62 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Theme Toggle */}
+        {/* Language Switcher & Theme Toggle */}
         <div className="flex items-center gap-3">
           <div className="h-8 w-px bg-border/50" />
-          <ModeToggle />
-        </div>
+          
+          {/* Locale Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-9 w-9 rounded-lg border-primary/20 bg-gradient-to-br from-background to-muted/30 hover:border-primary/40 hover:from-primary/5 hover:to-primary/10 transition-all duration-300 group relative overflow-hidden"
+              >
+                <Languages className="h-4 w-4" />
+                <span className="sr-only">Change language</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align={locale === 'ar' ? 'start' : 'end'}
+              className="w-32 bg-background/95 backdrop-blur-xl border-primary/20 shadow-lg shadow-primary/5"
+            >
+              <DropdownMenuItem 
+                onClick={() => router.replace(pathname, { locale: 'en' })}
+                className={cn(
+                  "flex items-center gap-2 cursor-pointer transition-all",
+                  locale === 'en' && "bg-primary/10 text-primary font-semibold"
+                )}
+              >
+                <span>English</span>
+                {locale === 'en' && (
+                  <div className={cn("h-1.5 w-1.5 rounded-full bg-primary", "ml-auto")} />
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => router.replace(pathname, { locale: 'ar' })}
+                className={cn(
+                  "flex items-center gap-2 cursor-pointer transition-all",
+                  locale === 'ar' && "bg-primary/10 text-primary font-semibold"
+                )}
+              >
+                <span>العربية</span>
+                {locale === 'ar' && (
+                  <div className={cn("h-1.5 w-1.5 rounded-full bg-primary", "mr-auto")} />
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+        <ModeToggle />
+    </div>
       </div>
 
         {/* Decorative Gradient Lines */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-      <div className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm" />
-    </nav>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+        <div className="absolute bottom-0 left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm" />
+      </nav>
+    </div>
   )
 }
 

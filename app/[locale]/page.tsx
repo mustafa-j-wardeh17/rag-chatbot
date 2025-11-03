@@ -1,4 +1,8 @@
+import { useTranslations } from 'next-intl';
+
 export default function Home() {
+  const t = useTranslations('home');
+
   return (
     <main className="flex min-h-screen items-center justify-center pt-32 px-4">
       <div className="text-center space-y-6 max-w-4xl">
@@ -6,17 +10,17 @@ export default function Home() {
         <div className="space-y-4">
           <h1 className="text-5xl md:text-7xl font-bold leading-tight">
             <span className="bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
-              Welcome to
+              {t('title')}
             </span>
             <br />
             <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-              RAG Chatbot
+              {t('subtitle')}
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
-            AI-Powered document assistant with{" "}
+            {t('description')}{" "}
             <span className="font-semibold bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent">
-              Retrieval-Augmented Generation
+              {t('rag')}
             </span>
           </p>
         </div>

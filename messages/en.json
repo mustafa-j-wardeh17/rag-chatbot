@@ -1,0 +1,30 @@
+{
+  "navbar": {
+    "title": "RAG Chatbot",
+    "subtitle": "AI-Powered Assistant",
+    "home": "Home",
+    "chat": "Chat",
+    "docs": "Docs",
+    "settings": "Settings",
+    "contact": "Contact",
+    "pricing": "Pricing"
+  },
+  "home": {
+    "title": "Welcome to",
+    "subtitle": "RAG Chatbot",
+    "description": "AI-Powered document assistant with",
+    "rag": "Retrieval-Augmented Generation"
+  },
+  "contact": {
+    "title": "Contact Us"
+  },
+  "pricing": {
+    "title": "Pricing"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "tryAgain": "Try again"
+  }
+}
+
