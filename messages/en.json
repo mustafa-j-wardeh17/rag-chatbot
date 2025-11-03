@@ -3,6 +3,7 @@
     "title": "RAG Chatbot",
     "subtitle": "AI-Powered Assistant",
     "home": "Home",
+    "about": "About",
     "chat": "Chat",
     "docs": "Docs",
     "settings": "Settings",
@@ -14,26 +15,154 @@
     "title": "Welcome to",
     "subtitle": "RAG Chatbot",
     "description": "AI-Powered document assistant with",
-    "rag": "Retrieval-Augmented Generation"
+    "rag": "Retrieval-Augmented Generation",
+    "cta": {
+      "getStarted": "Get Started",
+      "learnMore": "Learn More",
+      "uploadDocuments": "Upload Documents"
+    },
+    "features": {
+      "title": "Why Choose Us",
+      "feature1": {
+        "title": "Smart Document Processing",
+        "description": "AI-powered extraction and understanding of your PDF documents"
+      },
+      "feature2": {
+        "title": "Instant Answers",
+        "description": "Get accurate answers from your documents in seconds"
+      },
+      "feature3": {
+        "title": "Secure & Private",
+        "description": "Your documents are processed securely and stored safely"
+      }
+    }
+  },
+  "footer": {
+    "description": "AI-Powered RAG Chatbot for intelligent document processing and question answering.",
+    "quickLinks": "Quick Links",
+    "resources": {
+      "title": "Resources",
+      "documentation": "Documentation",
+      "support": "Support"
+    },
+    "legal": "Legal",
+    "connect": "Connect With Us",
+    "social": {
+      "github": "GitHub",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "email": "Email"
+    },
+    "copyright": "All rights reserved.",
+    "madeWith": "Made with",
+    "by": "by"
+  },
+  "about": {
+    "title": "About Us",
+    "subtitle": "Intelligent Document Processing with RAG Technology",
+    "whatWeDo": {
+      "title": "What We Do",
+      "description": "We provide an advanced AI-powered chatbot system that uses Retrieval-Augmented Generation (RAG) technology to answer questions based on your uploaded PDF documents."
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Upload Your Documents",
+        "description": "Upload your PDF files to build your knowledge base. Our system supports various document formats."
+      },
+      "step2": {
+        "title": "Intelligent Processing",
+        "description": "Your documents are processed, chunked, and converted into vector embeddings using advanced AI models."
+      },
+      "step3": {
+        "title": "Vector Storage",
+        "description": "The processed embeddings are stored in a high-performance vector database for fast retrieval."
+      },
+      "step4": {
+        "title": "Ask Questions",
+        "description": "Chat with your documents! Ask questions and get accurate answers based on the content of your uploaded PDFs."
+      }
+    },
+    "features": {
+      "title": "Key Features",
+      "feature1": {
+        "title": "Document Intelligence",
+        "description": "Extract and understand information from PDF documents with high accuracy"
+      },
+      "feature2": {
+        "title": "Semantic Search",
+        "description": "Find relevant information using semantic understanding, not just keyword matching"
+      },
+      "feature3": {
+        "title": "Context-Aware Responses",
+        "description": "Get answers that understand the context and meaning of your documents"
+      },
+      "feature4": {
+        "title": "Multi-Language Support",
+        "description": "Support for multiple languages and document types"
+      }
+    },
+    "technology": {
+      "title": "Technology Stack",
+      "description": "Built with cutting-edge technologies including OpenAI embeddings, Pinecone vector database, and LangChain for document processing."
+    }
   },
   "contact": {
-    "title": "Contact Us"
+    "title": "Contact Us",
+    "subtitle": "Get in Touch",
+    "description": "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+    "contactInfo": {
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "addressValue": "123 Tech Street, Silicon Valley, CA 94000"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Enter your name",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "subject": "Subject",
+      "subjectPlaceholder": "What's this about?",
+      "message": "Message",
+      "messagePlaceholder": "Tell us more about your inquiry...",
+      "submit": "Send Message",
+      "submitting": "Sending...",
+      "success": "Message sent successfully!",
+      "error": "Failed to send message. Please try again."
+    },
+    "map": {
+      "location": "Our Location",
+      "getDirections": "Get Directions"
+    }
   },
   "pricing": {
-    "title": "Pricing"
+    "title": "Pricing",
+    "subtitle": "Choose Your Plan"
   },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "processing": "Processing...",
+    "success": "Success",
+    "failed": "Failed"
   },
   "upload": {
-    "title": "Upload PDF",
-    "description": "Upload a PDF file to help the AI assistant",
-    "upload": "Upload PDF",
+    "title": "Upload Your Knowledge Base",
+    "description": "Upload PDF files to create your document knowledge base",
+    "label": "Upload Your Knowledge Base PDF File Here",
+    "uploadButton": "Upload to Pinecone",
     "uploading": "Uploading...",
+    "processing": "Processing...",
+    "initializing": "Initializing Client and creating index...",
+    "chunking": "Preparing chunks from PDF file...",
+    "embedding": "Loading chunks into vector store...",
     "uploaded": "Uploaded successfully",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "changeFiles": "Change Files",
+    "removeFile": "Remove File",
+    "uploadFailed": "File Upload Failed, Try Again"
   }
 }
 

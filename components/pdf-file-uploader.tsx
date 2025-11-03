@@ -1,6 +1,7 @@
 import { UploadButton, UploadDropzone } from "@/utils/uploadthing";
 import { Pencil, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 import {
   FaFilePdf,
   FaImage,
@@ -70,6 +71,8 @@ export default function PDFFileUpload({
   className = "col-span-full",
   endpoint = "",
 }: PDFUploadInputProps) {
+  const t = useTranslations('upload');
+  
   function handleImageRemove() {
     setFile(null);
   }
@@ -87,10 +90,10 @@ export default function PDFFileUpload({
           <button
             onClick={() => setFile(null)}
             type="button"
-            className="flex space-x-2 bg-slate-900 rounded-md shadow text-slate-50 py-2 px-4"
+            className="flex space-x-2 bg-slate-900 rounded-md shadow text-slate-50 py-2 px-4 cursor-pointer"
           >
             <Pencil className="w-5 h-5" />
-            <span>Change Files</span>
+            <span>{t('changeFiles')}</span>
           </button>
         )}
       </div>
@@ -100,7 +103,7 @@ export default function PDFFileUpload({
             <button
               type="button"
               onClick={() => handleImageRemove()}
-              className="absolute -top-4 -right-2 bg-slate-100 text-red-600 rounded-full "
+              className="absolute -top-4 -right-2 bg-slate-100 text-red-600 rounded-full cursor-pointer"
             >
               <XCircle className="" />
             </button>
@@ -135,7 +138,7 @@ export default function PDFFileUpload({
             console.log("Upload Completed");
           }}
           onUploadError={(error: any) => {
-            toast.error("File Upload Failed, Try Again");
+            toast.error(t('uploadFailed'));
             console.log(`ERROR! ${error.message}`, error);
           }}
         />

@@ -130,6 +130,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+  a, button[type="button"], button[type="submit"] {
+    @apply cursor-pointer;
+  }
+  html {
+    /* Always reserve space for scrollbar to prevent layout shift */
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
+  }
+  
   body {
     @apply bg-background text-foreground;
     /* Subtle gradient background */

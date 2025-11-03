@@ -23,7 +23,7 @@ export function ModeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg">
+      <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-primary/20 bg-gradient-to-br from-background to-muted/30">
         <div className="h-4 w-4" />
       </Button>
     )
@@ -68,7 +68,8 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
-        align="end" 
+        align="end"
+        sideOffset={8}
         className="w-36 bg-background/95 backdrop-blur-xl border-primary/20 shadow-lg shadow-primary/5 flex flex-col gap-1"
       >
         <DropdownMenuItem 

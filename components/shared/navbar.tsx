@@ -1,23 +1,16 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { ModeToggle } from '../theme-toggle'
 import { cn } from '@/lib/utils'
-import { Link, usePathname, useRouter } from '@/i18n/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { navigationItems } from '@/constants/navigation'
-import { Sparkles, Languages } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
+import { Sparkles } from 'lucide-react'
+import CustomLanguageSwitcher from './custom-language-switcher'
+import CustomThemeToggle from './custom-theme-toggle'
 
 const Navbar = () => {
   const pathname = usePathname()
-  const router = useRouter()
   const locale = useLocale()
   const t = useTranslations('navbar')
   const [scrolled, setScrolled] = useState(false)
@@ -106,10 +99,10 @@ const Navbar = () => {
   }, [updateSliderPosition, locale])
 
   return (
-    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+    <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
       <nav
         className={cn(
-          "w-full max-w-5xl transition-all duration-500",
+          "w-full max-w-5xl transition-all duration-500 pointer-events-auto",
           "backdrop-blur-xl border rounded-3xl ring-1 ring-primary/5 relative",
         // Base shadows for light mode - subtle and professional
         "shadow-[0_8px_16px_-4px_rgba(0,0,0,0.08),0_4px_8px_-2px_rgba(0,0,0,0.04)]",
@@ -131,7 +124,7 @@ const Navbar = () => {
       
       <div className={cn(
         "flex items-center justify-between px-6 py-4 relative",
-        locale === 'ar' && "flex-row-reverse"
+        "min-h-[72px]"
       )}>
         {/* Logo Section */}
         <Link 
@@ -196,7 +189,7 @@ const Navbar = () => {
                   }, 100)
                 }}
                 className={cn(
-                  "relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl transition-colors duration-300 z-20 isolate group",
+                  "relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl transition-colors duration-300 z-20 isolate group cursor-pointer",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
                   locale === 'ar' && "flex-row-reverse",
                   isActive 
@@ -245,7 +238,7 @@ const Navbar = () => {
                   key={item.id}
                   href={item.href as any}
                   className={cn(
-                    "p-2.5 rounded-lg transition-all duration-300 relative isolate",
+                    "p-2.5 rounded-lg transition-all duration-300 relative isolate cursor-pointer",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                     isActive 
                       ? "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-md shadow-primary/20" 
@@ -263,54 +256,15 @@ const Navbar = () => {
         </div>
 
         {/* Language Switcher & Theme Toggle */}
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-px bg-border/50" />
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="h-8 w-px bg-border/50 flex-shrink-0" />
           
-          {/* Locale Switcher */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-9 w-9 cursor-pointer rounded-lg border-primary/20 bg-gradient-to-br from-background to-muted/30 hover:border-primary/40 hover:from-primary/5 hover:to-primary/10 transition-all duration-300 group relative overflow-hidden"
-              >
-                <Languages className="h-4 w-4" />
-                <span className="sr-only">Change language</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align={locale === 'ar' ? 'start' : 'end'}
-              className="w-32 bg-background/95 backdrop-blur-xl border-primary/20 shadow-lg shadow-primary/5 flex flex-col gap-1"
-            >
-              <DropdownMenuItem 
-                onClick={() => router.replace(pathname, { locale: 'en' })}
-                className={cn(
-                  "flex items-center gap-2 cursor-pointer transition-all",
-                  locale === 'en' && "bg-primary/10 text-primary font-semibold"
-                )}
-              >
-                <span>English</span>
-                {locale === 'en' && (
-                  <div className={cn("h-1.5 w-1.5 rounded-full bg-primary", "ml-auto")} />
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => router.replace(pathname, { locale: 'ar' })}
-                className={cn(
-                  "flex items-center gap-2 cursor-pointer transition-all",
-                  locale === 'ar' && "bg-primary/10 text-primary font-semibold"
-                )}
-              >
-                <span>العربية</span>
-                {locale === 'ar' && (
-                  <div className={cn("h-1.5 w-1.5 rounded-full bg-primary", "mr-auto")} />
-                )}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Custom Locale Switcher */}
+          <CustomLanguageSwitcher />
 
-        <ModeToggle />
-    </div>
+          {/* Custom Theme Toggle */}
+          <CustomThemeToggle />
+        </div>
       </div>
 
         {/* Decorative Gradient Lines */}

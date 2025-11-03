@@ -6,7 +6,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const t = await getTranslations('home');
 
   return (
-    <main className="flex min-screen container mx-auto">
+    <main className="relative">
       <Hero title={t('title')} subtitle={t('subtitle')} description={t('description')} rag={t('rag')} locale={locale} />
     </main> 
   );

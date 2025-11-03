@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import "../globals.css";
 import Navbar from "@/components/shared/navbar";
+import Footer from "@/components/shared/footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "react-hot-toast";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
@@ -54,6 +56,44 @@ export default async function LocaleLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
             >
+                <Script
+                    id="scrollbar-fix"
+                    strategy="beforeInteractive"
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                            (function() {
+                                function calculateScrollbarWidth() {
+                                    if (typeof document === 'undefined') return;
+                                    
+                                    const outer = document.createElement('div');
+                                    outer.style.cssText = 'visibility: hidden; overflow: scroll; position: absolute; width: 100px; height: 100px; top: -9999px;';
+                                    document.body.appendChild(outer);
+
+                                    const inner = document.createElement('div');
+                                    inner.style.width = '100%';
+                                    inner.style.height = '100%';
+                                    outer.appendChild(inner);
+
+                                    const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+                                    document.body.removeChild(outer);
+
+                                    if (scrollbarWidth > 0) {
+                                        document.documentElement.style.setProperty('--scrollbar-width', scrollbarWidth + 'px');
+                                    }
+                                    return scrollbarWidth;
+                                }
+
+                                if (document.readyState === 'loading') {
+                                    document.addEventListener('DOMContentLoaded', calculateScrollbarWidth);
+                                } else {
+                                    calculateScrollbarWidth();
+                                }
+                                
+                                window.addEventListener('resize', calculateScrollbarWidth);
+                            })();
+                        `,
+                    }}
+                />
                 <NextIntlClientProvider messages={messages}>
                     <ThemeProvider
                         attribute="class"
@@ -77,7 +117,10 @@ export default async function LocaleLayout({
                              */
                             routerConfig={extractRouterConfig(ourFileRouter)}
                         />
-                        {children}
+                        <div className="flex flex-col min-h-screen">
+                            {children}
+                            <Footer />
+                        </div>
                     </ThemeProvider>
                 </NextIntlClientProvider>
             </body>
