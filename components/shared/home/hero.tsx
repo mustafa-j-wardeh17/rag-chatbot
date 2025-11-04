@@ -242,7 +242,7 @@ const Hero = ({ title, subtitle, description, rag, locale }: {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
+            <h2 className="leading-[85px] text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
               {t('howItWorks.title')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -338,7 +338,7 @@ const Hero = ({ title, subtitle, description, rag, locale }: {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h3 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
+            <h3 className="leading-[60px] text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
               {t('howItWorks.technology.title')}
             </h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

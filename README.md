@@ -176,3 +176,545 @@ Development frameworks simplify RAG pipeline construction and reduce boilerplate
 
 User interfaces enable interaction with the RAG system. Vercel AI SDK provides helper functions and React hooks for building chat interfaces that stream responses and manage conversation state seamlessly.
 
+---
+
+## System Implementation Details
+
+This section explains how the utils and lib files are used in the PDF uploader and chat components with actual code examples.
+
+### PDF File Uploader: Code Implementation Flow
+
+#### Component Structure
+
+**1. Upload Page (`app/[locale]/upload/page.tsx`)**
+
+The upload page orchestrates the entire PDF upload process:
+
+```typescript
+import { prepare } from "@/actions/prepare";           // Server action for processing
+import PDFFileUpload from "@/components/pdf-file-uploader";  // Upload UI component
+import { PDFSource } from "@/utils/pdf-loader";        // Type definition
+
+export default function Page() {
+  const [file, setFile] = useState<FileProps | null>(null);
+  
+  async function submit() {
+    const pdfSource: PDFSource = {
+      type: "url",
+      source: file?.url ?? "",  // File URL from UploadThing
+    };
+    await prepare(pdfSource);  // Calls server action
+  }
+  
+  return (
+    <PDFFileUpload
+      label={t('label')}
+      file={file}
+      setFile={setFile}
+      endpoint="pdfUpload"
+    />
+  );
+}
+```
+
+**2. PDF Upload Component (`components/pdf-file-uploader.tsx`)**
+
+Handles file upload UI and integration with UploadThing:
+
+```typescript
+import { UploadDropzone } from "@/utils/uploadthing";  // UploadThing wrapper
+
+export default function PDFFileUpload({ file, setFile, endpoint }) {
+  return (
+    <UploadDropzone
+      endpoint={endpoint}
+      onClientUploadComplete={(res) => {
+        const url = {
+          url: res[0].ufsUrl || res[0].url,  // Gets file URL
+          title: res[0].name,
+          size: res[0].size,
+          type: res[0].type,
+        };
+        setFile(url);  // Stores file metadata in state
+      }}
+    />
+  );
+}
+```
+
+**How `utils/uploadthing.ts` Works:**
+```typescript
+// utils/uploadthing.ts
+import { generateUploadDropzone } from "@uploadthing/react";
+import type { OurFileRouter } from "@/app/api/uploadthing/core";
+
+export const UploadDropzone = generateUploadDropzone<OurFileRouter>();
+// Creates a typed upload component that connects to UploadThing API
+```
+
+#### Server Action: Document Processing (`actions/prepare.ts`)
+
+The `prepare` server action processes the uploaded PDF:
+
+```typescript
+"use server";
+
+import { getChunkedDocsFromPDF, PDFSource } from "@/utils/pdf-loader";
+import { embedAndStoreDocs } from "@/utils/vector-store";
+import { getPineconeClient } from "@/utils/pinecone-client";
+
+export async function prepare(source: PDFSource) {
+  // Step 1: Initialize Pinecone client
+  const pineconeClient = await getPineconeClient();
+  
+  // Step 2: Load and chunk PDF documents
+  const docs = await getChunkedDocsFromPDF(source);
+  
+  // Step 3: Generate embeddings and store in Pinecone
+  await embedAndStoreDocs(pineconeClient, docs);
+}
+```
+
+**How `utils/pinecone-client.ts` Works:**
+```typescript
+// utils/pinecone-client.ts
+import { Pinecone } from "@pinecone-database/pinecone";
+import { env } from "@/lib/config";  // Environment variables
+
+export async function getPineconeClient() {
+  const pineconeClient = new Pinecone({
+    apiKey: env.PINECONE_API_KEY,  // From lib/config.ts
+  });
+  
+  await pineconeClient.createIndex({
+    name: env.PINECONE_INDEX_NAME,     // Index name from config
+    dimension: 1536,                    // OpenAI embedding dimension
+    metric: "cosine",                   // Similarity metric
+    suppressConflicts: true,            // Don't error if exists
+    waitUntilReady: true,               // Wait for index to be ready
+  });
+  
+  return pineconeClient;
+}
+```
+
+**How `lib/config.ts` Works:**
+```typescript
+// lib/config.ts
+import z from "zod";
+
+const envSchema = z.object({
+  OPENAI_API_KEY: z.string().trim().min(1),
+  PINECONE_API_KEY: z.string().trim().min(1),
+  PINECONE_INDEX_NAME: z.string().trim().min(1),
+});
+
+export const env = envSchema.parse(process.env);
+// Validates and exports environment variables with type safety
+```
+
+**How `utils/pdf-loader.ts` Works:**
+```typescript
+// utils/pdf-loader.ts
+import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import axios from "axios";
+
+export async function getChunkedDocsFromPDF(pdfSource: PDFSource) {
+  let docs: Document[] = [];
+
+  // Step 1: Extract text from PDF based on source type
+  if (pdfSource.type === "url") {
+    // Download PDF from URL
+    const response = await axios.get(pdfSource.source, {
+      responseType: "arraybuffer",
+    });
+    const pdfBlob = new Blob([response.data], { type: "application/pdf" });
+    const loader = new WebPDFLoader(pdfBlob);
+    docs = await loader.load();  // Extracts text, creates Document objects
+  }
+
+  // Step 2: Split documents into chunks
+  const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 1000,      // Max characters per chunk
+    chunkOverlap: 200,    // Overlap between chunks
+  });
+  
+  const chunkedDocs = await textSplitter.splitDocuments(docs);
+  return chunkedDocs;  // Returns array of Document objects
+}
+```
+
+**How `utils/vector-store.ts` Works:**
+```typescript
+// utils/vector-store.ts
+import { PineconeStore } from "@langchain/pinecone";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { env } from "@/lib/config";
+
+export async function embedAndStoreDocs(client, docs) {
+  // Step 1: Initialize embedding model
+  const embeddings = new OpenAIEmbeddings();
+  // Uses OpenAI's text-embedding-ada-002 model (1536 dimensions)
+  
+  // Step 2: Get Pinecone index
+  const index = client.Index(env.PINECONE_INDEX_NAME);
+  
+  // Step 3: Generate embeddings and store in Pinecone
+  await PineconeStore.fromDocuments(docs, embeddings, {
+    pineconeIndex: index,
+    textKey: "text",  // Field name for storing original text
+  });
+  // This function:
+  // - Converts each document chunk to embedding vector
+  // - Stores vector + metadata (text, page number, etc.) in Pinecone
+  // - Creates unique IDs for each chunk
+}
+
+// Retrieves existing vector store for queries
+export async function getVectorStore(client) {
+  const embeddings = new OpenAIEmbeddings();
+  const index = client.Index(env.PINECONE_INDEX_NAME);
+  
+  const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
+    pineconeIndex: index,
+    textKey: "text",
+  });
+  
+  return vectorStore;  // Returns vector store for similarity search
+}
+```
+
+**Complete Upload Flow:**
+```
+User uploads PDF
+  ↓
+PDFFileUpload component (uses utils/uploadthing.ts)
+  → UploadDropzone uploads to UploadThing
+  → Returns file URL and metadata
+  ↓
+Upload page calls prepare() server action
+  ↓
+prepare() uses utils/pdf-loader.ts
+  → Downloads PDF from URL (axios)
+  → Extracts text (WebPDFLoader)
+  → Chunks documents (RecursiveCharacterTextSplitter)
+  ↓
+prepare() uses utils/vector-store.ts
+  → Creates OpenAI embeddings (OpenAIEmbeddings)
+  → Stores in Pinecone (PineconeStore.fromDocuments)
+  ↓
+prepare() uses utils/pinecone-client.ts
+  → Initializes Pinecone client (uses lib/config.ts for API key)
+  → Connects to index
+```
+
+### Chat Page: Code Implementation Flow
+
+#### Client-Side Components
+
+**1. Chat Component (`components/shared/chat/chat.tsx`)**
+
+The main chat component manages UI and state:
+
+```typescript
+import { scrollToBottom, initialMessages, getSources } from "@/lib/utils";
+import { useChat } from "ai/react";  // Vercel AI SDK hook
+
+export function Chat() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  
+  // useChat hook manages messages, input, loading state
+  const { messages, input, handleInputChange, handleSubmit, isLoading, data } =
+    useChat({
+      initialMessages,  // From lib/utils.ts - initial greeting message
+    });
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    setTimeout(() => scrollToBottom(containerRef), 100);
+  }, [messages]);
+
+  return (
+    <div>
+      {/* Messages */}
+      {messages.map(({ id, role, content }, index) => (
+        <ChatLine
+          key={id}
+          role={role}
+          content={content}
+          sources={getSources(data, role, index)}  // Extracts sources from response
+        />
+      ))}
+      
+      {/* Input form */}
+      <form onSubmit={handleSubmit}>
+        <input value={input} onChange={handleInputChange} />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  );
+}
+```
+
+**How `lib/utils.ts` Functions Work:**
+
+```typescript
+// lib/utils.ts
+
+// 1. Initial message shown when chat loads
+export const initialMessages = [
+  {
+    role: "assistant",
+    id: "0",
+    content: "Hi! I am your PDF assistant. I am happy to help...",
+  },
+];
+
+// 2. Auto-scroll utility
+export function scrollToBottom(containerRef: React.RefObject<HTMLElement>) {
+  if (containerRef.current) {
+    const lastMessage = containerRef.current.lastElementChild;
+    if (lastMessage) {
+      lastMessage.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
+  }
+}
+
+// 3. Extract sources from API response data
+export const getSources = (data: Data[], role: string, index: number) => {
+  // Sources are only attached to assistant messages
+  // They're stored at specific indices in the data array
+  if (role === "assistant" && index >= 2 && (index - 2) % 2 === 0) {
+    const sourcesIndex = (index - 2) / 2;
+    if (data[sourcesIndex] && data[sourcesIndex].sources) {
+      return data[sourcesIndex].sources;  // Returns array of source texts
+    }
+  }
+  return [];
+};
+
+// 4. Format text for display (removes extra whitespace)
+export function formattedText(inputText: string) {
+  return inputText
+    .replace(/\n+/g, " ")           // Replace newlines with spaces
+    .replace(/(\w) - (\w)/g, "$1$2") // Join hyphenated words
+    .replace(/\s+/g, " ");          // Collapse multiple spaces
+}
+
+// 5. Tailwind class name merger (used throughout UI components)
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));  // Merges Tailwind classes intelligently
+}
+```
+
+**2. Chat Line Component (`components/shared/chat/chat-line.tsx`)**
+
+Displays individual messages with sources:
+
+```typescript
+import { formattedText } from "@/lib/utils";
+import { cn } from "@/lib/utils";  // For conditional class names
+
+export function ChatLine({ role, content, sources }) {
+  return (
+    <div>
+      {/* Message content with markdown rendering */}
+      <ReactMarkdown>{content}</ReactMarkdown>
+      
+      {/* Sources accordion */}
+      {sources && sources.length > 0 && (
+        <Accordion>
+          {sources.map((source, index) => (
+            <div key={index}>
+              {/* formattedText cleans up the source text for display */}
+              <ReactMarkdown>
+                {formattedText(source)}
+              </ReactMarkdown>
+            </div>
+          ))}
+        </Accordion>
+      )}
+    </div>
+  );
+}
+```
+
+#### Server-Side API Route
+
+**Chat API Route (`app/api/chat/route.ts`)**
+
+Handles chat requests and orchestrates RAG pipeline:
+
+```typescript
+import { processUserMessage } from "@/utils/langchain";
+import { getVectorStore } from "@/utils/vector-store";
+import { getPineconeClient } from "@/utils/pinecone-client";
+import { LangChainAdapter } from "ai";
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const messages: Message[] = body.messages ?? [];
+  const currentQuestion = messages[messages.length - 1].content;
+  
+  // Format conversation history for context
+  const formattedPreviousMessages = messages
+    .slice(0, -1)
+    .map((msg) => `${msg.role === "user" ? "Human" : "Assistant"}: ${msg.content}`)
+    .join("\n");
+
+  // Initialize model for streaming
+  const model = new ChatOpenAI({
+    modelName: "gpt-3.5-turbo",
+    streaming: true,
+  });
+  
+  // Get vector store connection
+  const pc = await getPineconeClient();  // Uses utils/pinecone-client.ts
+  const vectorStore = await getVectorStore(pc);  // Uses utils/vector-store.ts
+  
+  // Process message through RAG pipeline
+  const stream = await processUserMessage({
+    userPrompt: currentQuestion,
+    conversationHistory: formattedPreviousMessages,
+    vectorStore,
+    model,
+  });
+  
+  // Convert LangChain stream to Vercel AI SDK format
+  return LangChainAdapter.toDataStreamResponse(stream);
+}
+```
+
+**How `utils/langchain.ts` Works:**
+
+```typescript
+// utils/langchain.ts
+import { ChatOpenAI } from "@langchain/openai";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import { VectorStore } from "@langchain/core/vectorstores";
+
+export async function processUserMessage({
+  userPrompt,
+  conversationHistory,
+  vectorStore,  // From utils/vector-store.ts
+  model,        // ChatOpenAI instance
+}) {
+  // Stage 1: Query Refinement
+  const nonStreamingModel = new ChatOpenAI({
+    modelName: "gpt-3.5-turbo",
+    temperature: 0,      // Deterministic for query refinement
+    streaming: false,
+  });
+  
+  // Refine user query into optimized search query
+  const inquiryResult = await inquiryPrompt
+    .pipe(nonStreamingModel)
+    .pipe(new StringOutputParser())
+    .invoke({ userPrompt, conversationHistory });
+
+  // Stage 2: Context Retrieval
+  // Search vector store for relevant documents
+  const relevantDocs = await vectorStore.similaritySearch(inquiryResult, 3);
+  // Returns top 3 most similar document chunks based on cosine similarity
+  
+  // Extract text content from retrieved documents
+  const context = relevantDocs.map((doc) => doc.pageContent).join("\n\n");
+  // relevantDocs contains Document objects with:
+  // - pageContent: The actual text
+  // - metadata: page number, source file, etc.
+
+  // Stage 3: Response Generation
+  // Generate answer using streaming model
+  return qaPrompt
+    .pipe(model)  // Streaming ChatOpenAI model
+    .pipe(new StringOutputParser())
+    .stream({ context, question: inquiryResult });
+  // Returns a stream that the API route converts to Vercel AI SDK format
+}
+
+// Query refinement prompt template
+const inquiryPrompt = ChatPromptTemplate.fromMessages([
+  ["system", "You are an expert query formulation specialist..."],
+  ["human", "USER PROMPT: {userPrompt}\n\nCONVERSATION LOG: {conversationHistory}"],
+]);
+
+// Answer generation prompt template
+const qaPrompt = ChatPromptTemplate.fromMessages([
+  ["system", "You are an elite AI research assistant...\n\nContext: {context}"],
+  ["human", "Question: {question}"],
+]);
+```
+
+**Complete Chat Flow:**
+```
+User types question and submits
+  ↓
+Chat component calls handleSubmit (from useChat hook)
+  → POST request to /api/chat with messages array
+  ↓
+API route (app/api/chat/route.ts)
+  → Gets messages from request body
+  → Formats conversation history
+  → Initializes ChatOpenAI model (streaming)
+  → Gets Pinecone client (utils/pinecone-client.ts)
+  → Gets vector store (utils/vector-store.ts)
+  → Calls processUserMessage (utils/langchain.ts)
+  ↓
+processUserMessage (utils/langchain.ts)
+  → Stage 1: Refines query using inquiryPrompt
+  → Stage 2: Searches vectorStore.similaritySearch()
+  → Stage 3: Generates answer using qaPrompt + context
+  → Returns stream
+  ↓
+API route converts stream using LangChainAdapter
+  → Returns streaming response to client
+  ↓
+Chat component receives stream via useChat hook
+  → Updates messages state in real-time
+  → Calls scrollToBottom() (lib/utils.ts)
+  → Calls getSources() to extract sources (lib/utils.ts)
+  ↓
+ChatLine component renders message
+  → Uses formattedText() to clean source text (lib/utils.ts)
+  → Uses cn() for styling (lib/utils.ts)
+  → Displays markdown content and sources
+```
+
+#### Key Utility Functions Summary
+
+**From `lib/utils.ts`:**
+- `cn()`: Merges Tailwind CSS classes intelligently (used in all UI components)
+- `scrollToBottom()`: Auto-scrolls chat to latest message
+- `initialMessages`: Default greeting message for chat
+- `getSources()`: Extracts source citations from API response
+- `formattedText()`: Cleans text for display (removes extra whitespace)
+
+**From `utils/pdf-loader.ts`:**
+- `getChunkedDocsFromPDF()`: Downloads PDF, extracts text, chunks documents
+
+**From `utils/vector-store.ts`:**
+- `embedAndStoreDocs()`: Generates embeddings and stores in Pinecone
+- `getVectorStore()`: Retrieves vector store for similarity search
+
+**From `utils/pinecone-client.ts`:**
+- `getPineconeClient()`: Initializes and returns Pinecone client
+
+**From `utils/langchain.ts`:**
+- `processUserMessage()`: Complete RAG pipeline (query refinement → retrieval → generation)
+
+**From `utils/uploadthing.ts`:**
+- `UploadDropzone`: Typed upload component for file uploads
+
+
+
+## License
+
+This project is **free to use** and was created by **Mustafa Abu Wardeh**.
+
+You are free to use, modify, and distribute this code for personal or commercial purposes.
+
