@@ -51,7 +51,7 @@ export default function ContactMap({ latitude, longitude, className = "" }: Cont
 
       {/* Professional Map Info Card */}
       <motion.div
-        className="absolute top-6   md:left-6 md:w-auto z-20"
+        className="absolute top-6   end-6 md:w-auto z-20"
         initial={{ opacity: 0, y: 20, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: 1, type: "spring", stiffness: 200 }}

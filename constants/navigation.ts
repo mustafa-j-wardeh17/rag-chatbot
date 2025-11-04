@@ -26,18 +26,12 @@ export const navigationItems: NavigationItem[] = [
     icon:Upload,
     href:'/upload'
   },
-  // { 
-  //   id: 'chat', 
-  //   label: 'Chat', 
-  //   icon: MessageSquare, 
-  //   href: '/chat' 
-  // },
-  // { 
-  //   id: 'pricing', 
-  //   label: 'Pricing', 
-  //   icon: DollarSign, 
-  //   href: '/pricing' 
-  // },
+  { 
+    id: 'chat', 
+    label: 'Chat', 
+    icon: MessageSquare, 
+    href: '/chat' 
+  },
   { 
     id: 'contact', 
     label: 'Contact', 

@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function Page() {
   const t = useTranslations('upload');
@@ -25,10 +26,18 @@ export default function Page() {
         source: file?.url ?? "",
       };
       await prepare(pdfSource);
+      
+      // Show success message
+      toast.success(t('uploaded'));
+      
+      // Reset to initial state after successful upload
       setLoading(false);
+      setLoadingMsg("");
+      setFile(null);
     } catch (error) {
       setLoading(false);
       setLoadingMsg("");
+      toast.error(t('error'));
       console.log(error);
     }
   }

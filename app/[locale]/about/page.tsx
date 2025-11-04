@@ -35,7 +35,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen pt-44 pb-20 px-4">
       <motion.div
-        className="container mx-auto space-y-16"
+        className="container max-w-7xl mx-auto space-y-16"
         variants={containerVariants}
         initial="hidden"
         animate="visible"

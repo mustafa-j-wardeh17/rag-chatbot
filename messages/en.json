@@ -19,7 +19,38 @@
     "cta": {
       "getStarted": "Get Started",
       "learnMore": "Learn More",
-      "uploadDocuments": "Upload Documents"
+      "uploadDocuments": "Upload Documents",
+      "startChatting": "Start Chatting"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Get started in just two simple steps",
+      "step1": {
+        "title": "Upload Your PDF",
+        "description": "Upload your PDF documents to build your personalized knowledge base. Our system processes and stores your documents securely.",
+        "button": "Upload PDF"
+      },
+      "step2": {
+        "title": "Ask Questions",
+        "description": "Chat with your documents! Ask any question and get instant, accurate answers powered by advanced AI technology.",
+        "button": "Start Chat"
+      },
+      "technology": {
+        "title": "Powered by Advanced Technology",
+        "description": "Our system leverages cutting-edge AI technologies to provide intelligent document assistance",
+        "vectorDb": {
+          "title": "Vector Database",
+          "description": "Documents are stored as semantic vectors for lightning-fast similarity search"
+        },
+        "langchain": {
+          "title": "LangChain",
+          "description": "Sophisticated document processing and chunking for optimal information retrieval"
+        },
+        "llm": {
+          "title": "Large Language Model",
+          "description": "Advanced AI models generate accurate, context-aware answers from your documents"
+        }
+      }
     },
     "features": {
       "title": "Why Choose Us",
