@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
     // Parse and validate request
     const body = await req.json();
     const messages: Message[] = body.messages ?? [];
+    const locale: string = body.locale ?? "en"; // Default to English if not provided
 
     if (!messages.length) {
       return NextResponse.json(
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
       conversationHistory: formattedPreviousMessages,
       vectorStore,
       model,
+      locale,
     });
     console.log("message answer =>", stream);
 

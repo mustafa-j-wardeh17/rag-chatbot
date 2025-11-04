@@ -44,10 +44,12 @@ export async function getChunkedDocsFromPDF(pdfSource: PDFSource) {
         throw new Error("Unsupported PDF source type");
     }
 
-    // Split into chunks
+    // Split into chunks with better support for Arabic and multilingual text
     const textSplitter = new RecursiveCharacterTextSplitter({
       chunkSize: 1000,
       chunkOverlap: 200,
+      separators: ["\n\n", "\n", ". ", "! ", "? ", " ", ""], // Better handling for Arabic punctuation and spacing
+      keepSeparator: true, // Keep separators for better context preservation
     });
 
     const chunkedDocs = await textSplitter.splitDocuments(docs);

@@ -34,13 +34,32 @@ export function formattedText(inputText: string) {
     .replace(/\s+/g, " "); // Replace multiple consecutive spaces with a single space
 }
 
-// Default UI Message
+// Default UI Message - will be updated in Chat component based on locale
+export const getInitialMessages = (locale: string = "en"): Array<{ role: "assistant"; id: string; content: string }> => {
+  if (locale === "ar") {
+    return [
+      {
+        role: "assistant" as const,
+        id: "0",
+        content: "مرحباً! أنا مساعدك لملفات PDF. أنا سعيد لمساعدتك في الأسئلة المتعلقة بملف PDF الخاص بك.",
+      },
+    ];
+  }
+  return [
+    {
+      role: "assistant" as const,
+      id: "0",
+      content: "Hi! I am your PDF assistant. I am happy to help with your questions about your PDF.",
+    },
+  ];
+};
+
+// Legacy export for backward compatibility
 export const initialMessages: any[] = [
   {
     role: "assistant",
     id: "0",
-    content:
-      "Hi! I am your PDF assistant. I am happy to help with your questions about your PDF.",
+    content: "Hi! I am your PDF assistant. I am happy to help with your questions about your PDF.",
   },
 ];
 

@@ -194,6 +194,22 @@
     "changeFiles": "Change Files",
     "removeFile": "Remove File",
     "uploadFailed": "File Upload Failed, Try Again"
+  },
+  "chat": {
+    "welcome": {
+      "title": "Welcome to AI Assistant",
+      "description": "Ask me anything about your documents. I'm here to help you find answers quickly and accurately."
+    },
+    "input": {
+      "placeholder": "Ask a question about your documents..."
+    },
+    "footer": {
+      "hint": "Powered by advanced AI • Your conversations are private and secure"
+    },
+    "labels": {
+      "assistant": "AI Assistant",
+      "you": "You"
+    }
   }
 }
 

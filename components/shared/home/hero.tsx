@@ -135,10 +135,7 @@ const Hero = ({ title, subtitle, description, rag, locale }: {
               >
                 <Link href="/upload" className="cursor-pointer">
                   {t('cta.uploadDocuments')}
-                  <ArrowRight className={cn(
-                    "ml-2 h-5 w-5 transition-transform group-hover:translate-x-1",
-                    isRTL && "mr-2 ml-0 group-hover:-translate-x-1"
-                  )} />
+                  {isRTL ? <ArrowLeft className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" /> : <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />}
                 </Link>
               </Button>
             </motion.div>
@@ -216,24 +213,32 @@ const Hero = ({ title, subtitle, description, rag, locale }: {
         </motion.div>
 
         {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        <motion.button
+          onClick={() => {
+            const howItWorksSection = document.getElementById('how-it-works');
+            if (howItWorksSection) {
+              howItWorksSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer group"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.5 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <span className="text-xs text-muted-foreground">Scroll to learn more</span>
+          <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">Scroll to learn more</span>
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
-            <ArrowDown className="w-5 h-5 text-primary/60" />
+            <ArrowDown className="w-5 h-5 text-primary/60 group-hover:text-primary transition-colors" />
           </motion.div>
-        </motion.div>
+        </motion.button>
       </div>
 
       {/* How It Works Section */}
-      <div className="relative w-full py-20 bg-gradient-to-b from-background via-muted/20 to-background">
+      <div id="how-it-works" className="relative w-full py-20 bg-gradient-to-b from-background via-muted/20 to-background">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             className="text-center space-y-4 mb-16"
@@ -261,7 +266,7 @@ const Hero = ({ title, subtitle, description, rag, locale }: {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <div className="relative h-full bg-gradient-to-br from-background to-muted/30 rounded-3xl p-8 border border-primary/10 hover:border-primary/30 transition-all duration-300 shadow-lg hover:shadow-xl">
-                <div className="absolute top-6 right-6 w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <div className="absolute top-6 end-6 w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl font-bold text-primary">1</span>
                 </div>
                 <div className="space-y-6 mt-4">
@@ -280,10 +285,7 @@ const Hero = ({ title, subtitle, description, rag, locale }: {
                   >
                     <Link href="/upload" className="cursor-pointer">
                       {t('howItWorks.step1.button')}
-                      <ArrowRight className={cn(
-                        "ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1",
-                        isRTL && "mr-2 ml-0 group-hover/btn:-translate-x-1"
-                      )} />
+                      {isRTL ? <ArrowLeft className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" /> : <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />}
                     </Link>
                   </Button>
                 </div>
@@ -299,7 +301,7 @@ const Hero = ({ title, subtitle, description, rag, locale }: {
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               <div className="relative h-full bg-gradient-to-br from-background to-muted/30 rounded-3xl p-8 border border-primary/10 hover:border-primary/30 transition-all duration-300 shadow-lg hover:shadow-xl">
-                <div className="absolute top-6 right-6 w-16 h-16 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <div className="absolute top-6 end-6 w-16 h-16 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl font-bold text-primary">2</span>
                 </div>
                 <div className="space-y-6 mt-4">
@@ -319,10 +321,7 @@ const Hero = ({ title, subtitle, description, rag, locale }: {
                   >
                     <Link href="/chat" className="cursor-pointer">
                       {t('howItWorks.step2.button')}
-                      <ArrowRight className={cn(
-                        "ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1",
-                        isRTL && "mr-2 ml-0 group-hover/btn:-translate-x-1"
-                      )} />
+                      {isRTL ? <ArrowLeft className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" /> : <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />}
                     </Link>
                   </Button>
                 </div>

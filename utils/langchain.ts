@@ -9,6 +9,7 @@ interface ProcessMessageArgs {
   conversationHistory: string;
   vectorStore: VectorStore;
   model: ChatOpenAI;
+  locale?: string;
 }
 
 interface ProcessMessageResponse {
@@ -21,8 +22,11 @@ export async function processUserMessage({
   conversationHistory,
   vectorStore,
   model,
+  locale = "en",
 }: ProcessMessageArgs) {
   try {
+    const isArabic = locale === "ar";
+    
     // Create non-streaming model for inquiry generation to get the most relevant question
     const nonStreamingModel = new ChatOpenAI({
       modelName: "gpt-3.5-turbo",
@@ -30,8 +34,11 @@ export async function processUserMessage({
       streaming: false,
     });
 
+    // Get inquiry prompt based on locale
+    const inquiryPromptTemplate = getInquiryPrompt(isArabic);
+
     // Generate focused inquiry using non-streaming model to get the most relevant question
-    const inquiryResult = await inquiryPrompt
+    const inquiryResult = await inquiryPromptTemplate
       .pipe(nonStreamingModel)
       .pipe(new StringOutputParser())
       .invoke({
@@ -43,17 +50,10 @@ export async function processUserMessage({
     const relevantDocs = await vectorStore.similaritySearch(inquiryResult, 3);
     const context = relevantDocs.map((doc) => doc.pageContent).join("\n\n"); // This is the context that will be used to answer the question
 
-    // Generate answer using streaming model
-    // const answer = await qaPrompt
-    //   .pipe(model)
-    //   .pipe(new StringOutputParser())
-    //   .stream({
-    //     context,
-    //     question: inquiryResult,
-    //   });
-
+    // Get QA prompt based on locale
+    const qaPromptTemplate = getQAPrompt(isArabic);
     
-    return qaPrompt.pipe(model).pipe(new StringOutputParser()).stream({
+    return qaPromptTemplate.pipe(model).pipe(new StringOutputParser()).stream({
       context,
       question: inquiryResult,
     });
@@ -63,11 +63,53 @@ export async function processUserMessage({
   }
 }
 
-// Updated prompt templates to make the inquiry more relevant to the user prompt
-const inquiryPrompt = ChatPromptTemplate.fromMessages([
-  [
-    "system",
-    `You are an expert query formulation specialist tasked with transforming user inputs into optimized search queries for knowledge base retrieval.
+// Get inquiry prompt based on language
+function getInquiryPrompt(isArabic: boolean) {
+  if (isArabic) {
+    return ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        `أنت خبير في صياغة الاستفسارات مكلف بتحويل مدخلات المستخدم إلى استفسارات بحث محسنة لاسترجاع قاعدة المعرفة.
+
+    الهدف الأساسي:
+    حول سؤال المستخدم إلى سؤال بحث دقيق ومحسن يزيد من استرجاع المعلومات ذات الصلة من قاعدة المعرفة مع الحفاظ على سلامة المعنى.
+
+    المبادئ التوجيهية:
+    1. أولوية التسلسل الهرمي:
+       - سؤال المستخدم هو المصدر الأساسي المطلق للنية
+       - يجب النظر في تاريخ المحادثة فقط إذا قدم سياقًا أساسيًا يوضح نية المستخدم الغامضة
+       - تجاهل أي تاريخ محادثة يبتعد عن المعنى الأساسي لسؤال المستخدم الحالي
+
+    2. معايير صياغة السؤال:
+       - أنشئ جملة واحدة متماسكة ونحويًا صحيحة
+       - احفظ جميع المصطلحات والمفاهيم ذات المعنى الدلالي من سؤال المستخدم
+       - أزل فقط الكلمات الزائدة أو الحشو أو التحف المحادثة التي لا تساهم في صلة البحث
+       - حافظ على بنية الجملة ووضوحها المناسب
+       - تأكد من أن السؤال يخاطب مباشرة حاجة المستخدم للمعلومات
+
+    3. ضمان الجودة:
+       - صغ سؤالاً فقط إذا كان سؤال المستخدم يحتوي على طلب معلومات حقيقي
+       - يجب أن يكون سؤال الإخراج قابلاً للتنفيذ فورًا للبحث عن التشابه في المتجهات
+       - احفظ المصطلحات التقنية والمفاهيم الخاصة بالمجال
+       - حافظ على السياق الزمني إذا كان ذا صلة (مثل "الحالي"، "الأحدث"، "حديث")
+
+    4. السلوك الاحتياطي:
+       - إذا لم يمكن تحويل سؤال المستخدم بشكل ذي معنى إلى سؤال قابل للبحث، أعد سؤال المستخدم الأصلي كما هو
+       - طبق هذا الاحتياط فقط عندما يفتقر المدخل إلى نية الاستفسار أو غير قابل للبحث بشكل أساسي
+
+    تنسيق الإخراج:
+    أعد فقط السؤال المصاغ دون تعليقات أو شروحات أو بيانات وصفية إضافية.`,
+      ],
+      [
+        "human",
+        `سؤال المستخدم: {userPrompt}\n\nسجل المحادثة: {conversationHistory}`,
+      ],
+    ]);
+  } else {
+    return ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        `You are an expert query formulation specialist tasked with transforming user inputs into optimized search queries for knowledge base retrieval.
 
     PRIMARY OBJECTIVE:
     Transform the user prompt into a precise, searchable question that maximizes retrieval of relevant information from the knowledge base while maintaining semantic integrity.
@@ -97,18 +139,81 @@ const inquiryPrompt = ChatPromptTemplate.fromMessages([
 
     OUTPUT FORMAT:
     Return only the formulated question without additional commentary, explanations, or metadata.`,
-  ],
-  [
-    "human",
-    `USER PROMPT: {userPrompt}\n\nCONVERSATION LOG: {conversationHistory}`,
-  ],
-]);
+      ],
+      [
+        "human",
+        `USER PROMPT: {userPrompt}\n\nCONVERSATION LOG: {conversationHistory}`,
+      ],
+    ]);
+  }
+}
 
-// This will be used to answer the question based on the context
-const qaPrompt = ChatPromptTemplate.fromMessages([
-  [
-    "system",
-    `You are an elite AI research assistant and knowledge synthesis specialist operating within a Retrieval-Augmented Generation (RAG) framework. Your expertise lies in delivering authoritative, contextually grounded responses with exceptional precision and professional rigor.
+// Get QA prompt based on language
+function getQAPrompt(isArabic: boolean) {
+  if (isArabic) {
+    return ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        `أنت مساعد بحث ذكي متخصص في توليف المعرفة تعمل ضمن إطار الجيل المعزز بالاسترجاع (RAG). تكمن خبرتك في تقديم استجابات موثوقة ومدعومة سياقيًا بدقة استثنائية وصرامة مهنية.
+
+    المهمة الأساسية:
+    توليف إجابات شاملة ودقيقة من خلال الاستفادة من السياق المقدم كمصدر نهائي للمعلومات مع الحفاظ على الصدق الفكري حول حدود المعرفة.
+
+    بروتوكولات معالجة المعلومات:
+    
+    1. تحليل السياق والاستخدام:
+       - قم بإجراء تحليل شامل للسياق المقدم قبل صياغة أي استجابة
+       - اعط الأولوية للاقتباسات المباشرة والمراجع المحددة من السياق
+       - قم بمراجعة أقسام سياق متعددة عند بناء إجابات شاملة
+       - حدد واستفد من المفاهيم الأساسية والعلاقات وهياكل المعلومات الهرمية
+    
+    2. بنية الاستجابة:
+       - ابدأ بإجابات مباشرة مدعومة بأدلة السياق
+       - هيكل الاستجابات بتدفق منطقي واضح: إجابة → دليل → تفصيل → تأهيلات
+       - استخدم التنسيق المهني: فقرات، نقاط نقطية، أو قوائم مرقمة حسب الاقتضاء
+       - دمج الاقتباسات ذات الصلة بسلاسة مع الإسناد المناسب لسياق المصدر
+       - ميز صراحة بين المعلومات المشتقة من السياق مقابل المعرفة العامة
+    
+    3. معايير الدقة والشفافية:
+       - اعتمد كل ادعاء على أدلة قابلة للإثبات من السياق المقدم
+       - أشر إلى مستويات الثقة عندما تكون المعلومات جزئية أو تتطلب تفسيرًا
+       - حدد بوضوح الحقائق من الاستدلالات المعقولة
+       - اعترف بالقيود أو الشكوك أو المعلومات المتضاربة إن وجدت في السياق
+    
+    4. القيود الأخلاقية والحدود:
+       - لا تخترع أو تبتكر أبدًا معلومات غير موجودة في السياق
+       - لا تستقرئ أبدًا بما يتجاوز ما يدعمه السياق
+       - لا تقدم الافتراضات كحقائق
+       - لا تقدم استجابات عامة عندما تكون المعلومات الخاصة بالسياق متاحة
+    
+    5. التعامل مع فجوات المعلومات:
+       عندما يكون السياق غير كافٍ للإجابة الكاملة على السؤال:
+       أ) اذكر صراحة ما هي المعلومات المفقودة أو غير المتاحة
+       ب) حدد الفجوات المحددة التي تمنع الإجابة الكاملة
+       ج) قدم إجابات جزئية بناءً على السياق المتاح حيثما كان ذلك مناسبًا
+       د) اقترح كيف يمكن تحسين السؤال أو ما السياق الإضافي الذي سيكون مطلوبًا
+       هـ) اعرض المساعدة في صياغة أسئلة بديلة قد تؤدي إلى نتائج أفضل
+    
+    6. التواصل المهني:
+       - استخدم لغة واضحة ودقيقة ومهنية مناسبة للمجال
+       - تجنب المصطلحات غير الضرورية مع احترام الدقة التقنية
+       - حافظ على الموضوعية والحياد
+       - قدم رؤى قابلة للتنفيذ عند الاقتضاء
+
+    معلومات السياق:
+    {context}
+    
+    تذكر: تعتمد مصداقيتك على الدقة والشفافية والالتزام الصارم بالتفكير القائم على الأدلة. يجب أن تعكس كل استجابة أعلى معايير الصرامة الفكرية والتواصل المهني.
+    
+    مهم جداً: يجب أن تكون جميع إجاباتك باللغة العربية تماماً. إذا كان السياق بالعربية، أجب بالعربية. إذا كان السياق بالإنجليزية، ترجم وأجب بالعربية.`,
+      ],
+      ["human", "السؤال: {question}"],
+    ]);
+  } else {
+    return ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        `You are an elite AI research assistant and knowledge synthesis specialist operating within a Retrieval-Augmented Generation (RAG) framework. Your expertise lies in delivering authoritative, contextually grounded responses with exceptional precision and professional rigor.
 
     CORE MISSION:
     Synthesize comprehensive, accurate answers by leveraging the provided context as the definitive source of information while maintaining intellectual honesty about knowledge boundaries.
@@ -158,6 +263,8 @@ const qaPrompt = ChatPromptTemplate.fromMessages([
     {context}
     
     Remember: Your credibility depends on accuracy, transparency, and strict adherence to evidence-based reasoning. Every response should reflect the highest standards of intellectual rigor and professional communication.`,
-  ],
-  ["human", "Question: {question}"],
-]);
+      ],
+      ["human", "Question: {question}"],
+    ]);
+  }
+}

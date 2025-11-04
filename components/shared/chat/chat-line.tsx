@@ -11,6 +11,7 @@ import { formattedText } from "@/lib/utils";
 import { Sparkles, User, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 interface ChatLineProps extends Partial<Message> {
   sources: string[];
@@ -21,6 +22,7 @@ export function ChatLine({
   content,
   sources,
 }: ChatLineProps) {
+  const t = useTranslations('chat');
   if (!content) {
     return null;
   }
@@ -69,7 +71,7 @@ export function ChatLine({
                 : "text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/20"
             )}
           >
-            {isAssistant ? "AI Assistant" : "You"}
+            {isAssistant ? t('labels.assistant') : t('labels.you')}
           </span>
         </div>
 
@@ -77,17 +79,17 @@ export function ChatLine({
         <div
           className={cn(
             "relative rounded-2xl shadow-lg transition-all duration-200",
-            "border border-border/50 backdrop-blur-sm",
+            "border backdrop-blur-sm",
             isAssistant
-              ? "bg-card/80 text-card-foreground rounded-tl-sm"
-              : "bg-gradient-to-br from-amber-500/10 to-orange-500/10 text-foreground rounded-tr-sm border-amber-500/20",
-            "hover:shadow-xl"
+              ? "bg-card/80 dark:bg-muted/30 text-card-foreground dark:text-foreground rounded-tl-sm border-border/50 dark:border-border/60"
+              : "bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20 text-foreground rounded-tr-sm border-amber-500/20 dark:border-amber-500/30",
+            "hover:shadow-xl dark:hover:shadow-2xl"
           )}
         >
           {/* Content */}
           <div className="p-5">
             <div className="prose prose-sm dark:prose-invert max-w-none">
-              <div className="text-[15px] leading-relaxed text-foreground/90">
+              <div className="text-[15px] leading-relaxed text-foreground/90 dark:text-foreground/95">
                 <ReactMarkdown
                   components={{
                     p: ({ children }) => (
@@ -104,15 +106,15 @@ export function ChatLine({
                       </ol>
                     ),
                     li: ({ children }) => (
-                      <li className="text-foreground/80">{children}</li>
+                      <li className="text-foreground/80 dark:text-foreground/90">{children}</li>
                     ),
                     code: ({ children }) => (
-                      <code className="px-1.5 py-0.5 rounded-md bg-muted text-sm font-mono">
+                      <code className="px-1.5 py-0.5 rounded-md bg-muted dark:bg-muted/60 text-sm font-mono text-foreground dark:text-foreground">
                         {children}
                       </code>
                     ),
                     pre: ({ children }) => (
-                      <pre className="p-3 rounded-lg bg-muted overflow-x-auto mb-3">
+                      <pre className="p-3 rounded-lg bg-muted dark:bg-muted/60 overflow-x-auto mb-3 text-foreground dark:text-foreground">
                         {children}
                       </pre>
                     ),
@@ -139,14 +141,14 @@ export function ChatLine({
 
           {/* Sources */}
           {sources && sources.length > 0 && (
-            <div className="border-t border-border/50 bg-muted/30 rounded-b-2xl">
+            <div className="border-t border-border/50 dark:border-border/60 bg-muted/30 dark:bg-muted/40 rounded-b-2xl">
               <Accordion
                 type="single"
                 collapsible
                 className="w-full"
               >
                 <AccordionItem value="sources" className="border-0">
-                  <AccordionTrigger className="px-5 py-3 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <AccordionTrigger className="px-5 py-3 text-xs font-medium text-muted-foreground dark:text-muted-foreground/80 hover:text-foreground dark:hover:text-foreground transition-colors">
                     <div className="flex items-center gap-2">
                       <FileText className="w-3.5 h-3.5" />
                       <span>{sources.length} Source{sources.length > 1 ? "s" : ""}</span>
@@ -157,15 +159,15 @@ export function ChatLine({
                       {sources.map((source, index) => (
                         <div
                           key={index}
-                          className="p-3 rounded-lg bg-background/50 border border-border/50 text-xs"
+                          className="p-3 rounded-lg bg-background/50 dark:bg-background/70 border border-border/50 dark:border-border/60 text-xs"
                         >
                           <div className="flex items-start gap-2 mb-1">
-                            <FileText className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                            <span className="font-semibold text-muted-foreground">
+                            <FileText className="w-3.5 h-3.5 text-muted-foreground dark:text-muted-foreground/80 mt-0.5 flex-shrink-0" />
+                            <span className="font-semibold text-muted-foreground dark:text-muted-foreground/80">
                               Source {index + 1}
                             </span>
                           </div>
-                          <div className="mt-2 text-foreground/70 leading-relaxed">
+                          <div className="mt-2 text-foreground/70 dark:text-foreground/80 leading-relaxed">
                             <ReactMarkdown
                               components={{
                                 p: ({ children }) => (
@@ -215,7 +217,7 @@ export function ChatLineSkeleton() {
         </div>
 
         {/* Message Bubble Skeleton */}
-        <div className="relative rounded-2xl shadow-lg border border-border/50 bg-card/80 rounded-tl-sm">
+        <div className="relative rounded-2xl shadow-lg border border-border/50 dark:border-border/60 bg-card/80 dark:bg-muted/30 rounded-tl-sm">
           <div className="p-5 space-y-3">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />

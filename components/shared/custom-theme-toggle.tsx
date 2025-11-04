@@ -99,7 +99,7 @@ export default function CustomThemeToggle() {
       {/* Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute top-full right-0 mt-2 w-36 rounded-lg bg-background/95 backdrop-blur-xl border border-primary/20 shadow-lg shadow-primary/5 z-[100] overflow-hidden"
+          className="absolute top-full end-0 mt-2 w-36 rounded-lg bg-background/95 backdrop-blur-xl border border-primary/20 shadow-lg shadow-primary/5 z-[100] overflow-hidden"
           style={{
             position: 'absolute',
             isolation: 'isolate',
